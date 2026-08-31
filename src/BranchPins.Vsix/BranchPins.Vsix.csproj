@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Visual Studio runs in-process extensions on .NET Framework. The .NET 10 SDK builds this project. -->
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <GeneratePkgDefFile>true</GeneratePkgDefFile>
+    <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
+    <IncludeDebugSymbolsInVSIXContainer>true</IncludeDebugSymbolsInVSIXContainer>
+    <!-- Visual Studio supplies VSSDK assemblies; only BranchPins assemblies belong in the VSIX. -->
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../BranchPins.Core/BranchPins.Core.csproj" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.14.40265" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.14.2142" PrivateAssets="all" />
+    <!-- Explicit runtime references ensure the logging assemblies are included in the VSIX. -->
+    <PackageReference Include="Serilog" Version="4.3.0" PrivateAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" PrivateAssets="all" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="source.extension.vsixmanifest" />
+    <VSCTCompile Include="Menus.vsct" Condition="'$(OS)' == 'Windows_NT'" />
+    <!-- The VSIX must carry these third-party runtime assemblies; Visual Studio does not provide them. -->
+    <Content Include="$(PkgSerilog)\lib\net462\Serilog.dll" Link="Serilog.dll" CopyToOutputDirectory="PreserveNewest" IncludeInVSIXContainer="true" />
+    <Content Include="$(PkgSerilog_Sinks_File)\lib\net462\Serilog.Sinks.File.dll" Link="Serilog.Sinks.File.dll" CopyToOutputDirectory="PreserveNewest" IncludeInVSIXContainer="true" />
+  </ItemGroup>
+
+  <Import Project="$(ThisPackageDirectory)\tools\vssdk\Microsoft.VsSDK.targets" />
+
+  <!-- SDK-style projects do not invoke the VSSDK's PrepareForRun target automatically. -->
+  <Target Name="PackageVsix" AfterTargets="Build" DependsOnTargets="GeneratePkgDef;CreateVsixContainer" Condition="'$(OS)' == 'Windows_NT'" />
+
+</Project>

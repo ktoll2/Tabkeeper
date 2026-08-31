@@ -1,0 +1,19 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio user and workspace state
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Test output
+[Tt]est[Rr]esult*/
+*.trx
+
+# VSIX build artifacts
+*.vsix

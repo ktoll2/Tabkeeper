@@ -1,0 +1,62 @@
+name: Bug report
+description: Report unexpected Branch Pins behavior.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include repository contents, local paths, or secrets. You may attach a redacted activity-log excerpt if it helps reproduce the problem.
+  - type: input
+    id: extension-version
+    attributes:
+      label: Branch Pins version
+      description: The installed extension version.
+    validations:
+      required: true
+  - type: input
+    id: visual-studio-version
+    attributes:
+      label: Visual Studio version
+      description: Include edition and full version from Help > About.
+    validations:
+      required: true
+  - type: dropdown
+    id: git-state
+    attributes:
+      label: Git state
+      options:
+        - Local branch
+        - Detached HEAD
+        - Linked worktree
+        - Unknown
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Pin ...
+        3. Switch from ... to ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Redacted activity-log excerpt (optional)
+      description: Stored at %LOCALAPPDATA%\BranchPins\activity.log.
