@@ -1,6 +1,6 @@
-<img src="Tabkeeper.Vsix/Resources/Logo-256.png" align="left" width="120" alt="Tabkeeper logo">
-
 # Tabkeeper
+
+<img src="Tabkeeper.Vsix/Resources/Logo-256.png" align="left" width="120" alt="Tabkeeper logo">
 
 [![CI](https://github.com/ktoll2/Tabkeeper/actions/workflows/ci.yml/badge.svg)](https://github.com/ktoll2/Tabkeeper/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/ktoll2/Tabkeeper?display_name=tag&logo=github)](https://github.com/ktoll2/Tabkeeper/releases/latest)
