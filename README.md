@@ -1,4 +1,4 @@
-<img src="Tabkeeper.Vsix/Resources/Logo-256.png" align="right" width="120" alt="Tabkeeper logo">
+<img src="Tabkeeper.Vsix/Resources/Logo-256.png" align="left" width="120" alt="Tabkeeper logo">
 
 # Tabkeeper
 
