@@ -1,4 +1,11 @@
+<img src="Tabkeeper.Vsix/Resources/Logo-256.png" align="right" width="120" alt="Tabkeeper logo">
+
 # Tabkeeper
+
+[![CI](https://github.com/ktoll2/Tabkeeper/actions/workflows/ci.yml/badge.svg)](https://github.com/ktoll2/Tabkeeper/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/ktoll2/Tabkeeper?display_name=tag&logo=github)](https://github.com/ktoll2/Tabkeeper/releases/latest)
+[![Prerelease](https://img.shields.io/github/v/release/ktoll2/Tabkeeper?include_prereleases&display_name=tag&label=prerelease)](https://github.com/ktoll2/Tabkeeper/releases)
+[![License: MIT](https://img.shields.io/github/license/ktoll2/Tabkeeper)](LICENSE)
 
 Tabkeeper is a Visual Studio extension that gives each Git branch its own set of pinned document
 tabs. Switch branches and your pinned tabs switch with you: the tabs you had pinned on the branch
