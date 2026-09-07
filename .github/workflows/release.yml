@@ -75,7 +75,8 @@ jobs:
           if ('${{ steps.cert.outputs.path }}') {
             $buildArgs += "-p:VsixCertificatePath=${{ steps.cert.outputs.path }}"
             $buildArgs += "-p:VsixCertificatePassword=$env:CERT_PASSWORD"
-            $buildArgs += '-p:VsixTimestampUrl=http://timestamp.digicert.com'
+            #$buildArgs += '-p:VsixTimestampUrl=http://timestamp.digicert.com'
+            # No -p:VsixTimestampUrl: vsixsigntool 17.10 fails (0x80004005) whenever a timestamp is requested, RFC3161 or Authenticode alike.
           }
           dotnet @buildArgs
 

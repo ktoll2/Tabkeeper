@@ -74,7 +74,9 @@
       <_VsixSignTool>$(PkgMicrosoft_VSSDK_Vsixsigntool)\tools\vssdk\vsixsigntool.exe</_VsixSignTool>
       <_VsixSignCert Condition="'$(VsixCertificatePath)' != ''">/f "$(VsixCertificatePath)" /p "$(VsixCertificatePassword)"</_VsixSignCert>
       <_VsixSignCert Condition="'$(VsixCertificateThumbprint)' != ''">/sha1 $(VsixCertificateThumbprint)</_VsixSignCert>
-      <!-- Timestamping needs network; set VsixTimestampUrl in CI, leave empty for offline builds. -->
+	  <!-- Timestamping needs network; set VsixTimestampUrl in CI, leave empty for offline builds. -->
+      <!-- Optional RFC3161 timestamp. Left unset by CI: vsixsigntool 17.10 returns 0x80004005
+           whenever a timestamp is requested. Wire this up only with a signer that supports it. -->
       <_VsixTimestamp Condition="'$(VsixTimestampUrl)' != ''">/tr $(VsixTimestampUrl) /td sha256</_VsixTimestamp>
     </PropertyGroup>
     <Error Text="vsixsigntool.exe was not found at '$(_VsixSignTool)'." Condition="!Exists('$(_VsixSignTool)')" />
