@@ -1,23 +1,17 @@
-name: Release
+name: Prerelease
 
-# Publishes a stable release whenever extension code is merged to main.
+# Every push to the 'prerelease' branch publishes a GitHub pre-release.
 # Version is derived (YYYY.M.D.<run>), never hand-maintained.
 on:
   push:
-    branches: [main]
-    paths:
-      - "Tabkeeper.Core/**"
-      - "Tabkeeper.Vsix/**"
-      - "Tabkeeper.slnx"
-      - "global.json"
-      - ".github/workflows/release.yml"
+    branches: [prerelease]
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  release:
+  prerelease:
     runs-on: windows-latest
 
     steps:
@@ -34,8 +28,8 @@ jobs:
         shell: pwsh
         run: |
           $v = "{0}.{1}" -f (Get-Date -Format 'yyyy.M.d'), ${{ github.run_number }}
-          "vsix=$v"  >> $env:GITHUB_OUTPUT
-          "tag=v$v"  >> $env:GITHUB_OUTPUT
+          "vsix=$v"      >> $env:GITHUB_OUTPUT
+          "tag=v$v-pre"  >> $env:GITHUB_OUTPUT
 
       - name: Stamp VSIX version
         shell: pwsh
@@ -43,7 +37,7 @@ jobs:
           $manifest = 'Tabkeeper.Vsix/source.extension.vsixmanifest'
           (Get-Content $manifest -Raw) -replace '(<Identity\b[^>]*\bVersion=")[^"]*(")', "`${1}${{ steps.version.outputs.vsix }}`${2}" |
             Set-Content $manifest -NoNewline
-          Write-Host "Release ${{ steps.version.outputs.tag }} (VSIX ${{ steps.version.outputs.vsix }})"
+          Write-Host "Prerelease ${{ steps.version.outputs.tag }} (VSIX ${{ steps.version.outputs.vsix }})"
 
       - name: Restore dependencies
         run: dotnet restore Tabkeeper.slnx
@@ -63,7 +57,7 @@ jobs:
             "path=$pfx" >> $env:GITHUB_OUTPUT
           }
 
-      - name: Build release VSIX
+      - name: Build VSIX
         shell: pwsh
         env:
           CERT_PASSWORD: ${{ secrets.VSIX_CERTIFICATE_PASSWORD }}
@@ -91,11 +85,12 @@ jobs:
           "$sha  $($vsix.Name)" | Set-Content "$($vsix.FullName).sha256" -NoNewline
           "sha256=$sha" >> $env:GITHUB_OUTPUT
 
-      - name: Publish GitHub release
+      - name: Publish GitHub pre-release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: ${{ steps.version.outputs.tag }}
+          prerelease: true
           generate_release_notes: true
           append_body: true
           body: |

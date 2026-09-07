@@ -1,5 +1,5 @@
 name: Bug report
-description: Report unexpected Branch Pins behavior.
+description: Report unexpected Tabkeeper behavior.
 title: "bug: "
 labels:
   - bug
@@ -11,7 +11,7 @@ body:
   - type: input
     id: extension-version
     attributes:
-      label: Branch Pins version
+      label: Tabkeeper version
       description: The installed extension version.
     validations:
       required: true
@@ -59,4 +59,4 @@ body:
     id: logs
     attributes:
       label: Redacted activity-log excerpt (optional)
-      description: Stored at %LOCALAPPDATA%\BranchPins\activity.log.
+      description: Stored at %LOCALAPPDATA%\Tabkeeper\activity.log.

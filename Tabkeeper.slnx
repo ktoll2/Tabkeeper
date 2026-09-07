@@ -1,0 +1,12 @@
+<Solution>
+    <Folder Name="/Solution Items/">
+        <File Path=".github/workflows/ci.yml" />
+        <File Path=".github/workflows/release.yml" />
+        <File Path=".gitignore" />
+        <File Path="README.md" />
+    </Folder>
+    <Project Path="Tabkeeper.Core.Tests/Tabkeeper.Core.Tests.csproj" />
+    <Project Path="Tabkeeper.Core/Tabkeeper.Core.csproj" />
+    <Project Path="Tabkeeper.Vsix/Tabkeeper.Vsix.csproj" />
+
+</Solution>

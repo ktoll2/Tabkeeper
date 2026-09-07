@@ -1,0 +1,86 @@
+﻿<Project>
+
+  <!--
+    Explicit SDK imports (instead of the Sdk="Microsoft.NET.Sdk" attribute) so that
+    Microsoft.VsSDK.targets can be imported AFTER Sdk.targets. The VSSDK targets read
+    build properties such as IntermediateOutputPath at import time; when they are
+    imported from the project body they resolve to empty and the resource manifest is
+    written to "\resources.json" (VSSDK1207: Access to the path 'C:\resources.json' is denied).
+  -->
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <!-- Visual Studio runs in-process extensions on .NET Framework. The .NET 10 SDK builds this project. -->
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <!-- Product name for the shipped assembly and .vsix; C# namespaces stay Tabkeeper.* internally. -->
+    <AssemblyName>Tabkeeper</AssemblyName>
+    <RootNamespace>Tabkeeper.Vsix</RootNamespace>
+    <GeneratePkgDefFile>true</GeneratePkgDefFile>
+    <!-- Emit "CodeBase"="$PackageFolder$\Tabkeeper.dll" in the .pkgdef so Visual Studio loads the
+         package assembly from the extension folder. Without it the package fails with
+         FileNotFoundException. The VSSDK has no default for this. -->
+    <RegisterWithCodebase>true</RegisterWithCodebase>
+    <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
+    <IncludeDebugSymbolsInVSIXContainer>true</IncludeDebugSymbolsInVSIXContainer>
+    <!-- Visual Studio supplies VSSDK assemblies; only Tabkeeper assemblies belong in the VSIX. -->
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <UseWPF>true</UseWPF>
+    <!-- Deploying the VSIX into an experimental instance only works with full MSBuild inside
+         Visual Studio (F5). Command-line and CI builds ('dotnet build') just package the .vsix. -->
+    <DeployExtension Condition="'$(BuildingInsideVisualStudio)' != 'true'">false</DeployExtension>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Tabkeeper.Core/Tabkeeper.Core.csproj" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.14.40265" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="18.5.40034" PrivateAssets="all" />
+    <!-- vsixsigntool.exe, used by the SignVsix target when a certificate is supplied. -->
+    <PackageReference Include="Microsoft.VSSDK.Vsixsigntool" Version="17.10.34916.79" PrivateAssets="all" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="source.extension.vsixmanifest" />
+    <VSCTCompile Include="Menus.vsct" Condition="'$(OS)' == 'Windows_NT'" />
+    <!-- Unified Settings registration manifest. Ships in the VSIX; VS reads it to render the
+         Tools > Options / Settings page for Tabkeeper. -->
+    <Content Include="TabkeeperSettings.registration.json" CopyToOutputDirectory="PreserveNewest" IncludeInVSIX="true" />
+    <!-- Extension icon and preview image, referenced by source.extension.vsixmanifest. -->
+    <Content Include="Resources\Icon.png" IncludeInVSIX="true" />
+    <Content Include="Resources\PreviewImage.png" IncludeInVSIX="true" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <!-- Imported after Sdk.targets so IntermediateOutputPath and related build properties
+       are defined before the VSSDK targets consume them. -->
+  <Import Project="$(ThisPackageDirectory)\tools\vssdk\Microsoft.VsSDK.targets" />
+
+  <!-- SDK-style projects do not invoke the VSSDK's PrepareForRun target automatically. -->
+  <Target Name="PackageVsix" AfterTargets="Build" DependsOnTargets="GeneratePkgDef;CreateVsixContainer" Condition="'$(OS)' == 'Windows_NT'" />
+
+  <!--
+    Authenticode-signs the built .vsix when a certificate is supplied via:
+      -p:VsixCertificatePath=path\to\cert.pfx  -p:VsixCertificatePassword=***
+    (or VsixCertificateThumbprint for a cert already in the machine/user store).
+    Without a certificate this target is a no-op, so unsigned local and CI builds still work.
+  -->
+  <Target Name="SignVsix" AfterTargets="PackageVsix"
+          Condition="'$(OS)' == 'Windows_NT' and ('$(VsixCertificatePath)' != '' or '$(VsixCertificateThumbprint)' != '')">
+    <PropertyGroup>
+      <_VsixToSign Condition="'$(_VsixToSign)' == ''">$(TargetDir)$(TargetName).vsix</_VsixToSign>
+      <_VsixSignTool>$(PkgMicrosoft_VSSDK_Vsixsigntool)\tools\vssdk\vsixsigntool.exe</_VsixSignTool>
+      <_VsixSignCert Condition="'$(VsixCertificatePath)' != ''">/f "$(VsixCertificatePath)" /p "$(VsixCertificatePassword)"</_VsixSignCert>
+      <_VsixSignCert Condition="'$(VsixCertificateThumbprint)' != ''">/sha1 $(VsixCertificateThumbprint)</_VsixSignCert>
+      <!-- Timestamping needs network; set VsixTimestampUrl in CI, leave empty for offline builds. -->
+      <_VsixTimestamp Condition="'$(VsixTimestampUrl)' != ''">/tr $(VsixTimestampUrl) /td sha256</_VsixTimestamp>
+    </PropertyGroup>
+    <Error Text="vsixsigntool.exe was not found at '$(_VsixSignTool)'." Condition="!Exists('$(_VsixSignTool)')" />
+    <Error Text="VSIX to sign was not found at '$(_VsixToSign)'." Condition="!Exists('$(_VsixToSign)')" />
+    <Message Importance="high" Text="Signing $(_VsixToSign)" />
+    <Exec Command="&quot;$(_VsixSignTool)&quot; sign $(_VsixSignCert) /fd sha256 $(_VsixTimestamp) &quot;$(_VsixToSign)&quot;" />
+  </Target>
+
+</Project>

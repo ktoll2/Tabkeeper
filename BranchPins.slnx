@@ -1,9 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/BranchPins.Core/BranchPins.Core.csproj" />
-    <Project Path="src/BranchPins.Vsix/BranchPins.Vsix.csproj" />
-  </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/BranchPins.Core.Tests/BranchPins.Core.Tests.csproj" />
-  </Folder>
-</Solution>

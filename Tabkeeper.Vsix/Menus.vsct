@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable">
+  <Extern href="stdidcmd.h" />
+  <Extern href="vsshlids.h" />
+  <Commands package="guidTabkeeperPackage">
+    <Groups>
+      <Group guid="guidTabkeeperCommandSet" id="TabkeeperGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS" />
+      </Group>
+    </Groups>
+    <Buttons>
+      <Button guid="guidTabkeeperCommandSet" id="EnableTabkeeper" priority="0x0100" type="Button">
+        <Parent guid="guidTabkeeperCommandSet" id="TabkeeperGroup" />
+        <Strings><ButtonText>Enable Tabkeeper</ButtonText></Strings>
+      </Button>
+      <Button guid="guidTabkeeperCommandSet" id="SynchronizeNow" priority="0x0101" type="Button">
+        <Parent guid="guidTabkeeperCommandSet" id="TabkeeperGroup" />
+        <Strings><ButtonText>Sync Tabkeeper Now</ButtonText></Strings>
+      </Button>
+      <Button guid="guidTabkeeperCommandSet" id="ClearCurrentTabkeeper" priority="0x0102" type="Button">
+        <Parent guid="guidTabkeeperCommandSet" id="TabkeeperGroup" />
+        <Strings><ButtonText>Clear This Branch's Tab Set</ButtonText></Strings>
+      </Button>
+      <Button guid="guidTabkeeperCommandSet" id="OpenSavedPinState" priority="0x0103" type="Button">
+        <Parent guid="guidTabkeeperCommandSet" id="TabkeeperGroup" />
+        <Strings><ButtonText>Open Saved Tab State</ButtonText></Strings>
+      </Button>
+      <Button guid="guidTabkeeperCommandSet" id="ManageBranchRules" priority="0x0104" type="Button"><Parent guid="guidTabkeeperCommandSet" id="TabkeeperGroup" /><Strings><ButtonText>Manage Branch Rules</ButtonText></Strings></Button>
+      <Button guid="guidTabkeeperCommandSet" id="ExportCurrentPinSet" priority="0x0105" type="Button"><Parent guid="guidTabkeeperCommandSet" id="TabkeeperGroup" /><Strings><ButtonText>Export Tab Set</ButtonText></Strings></Button>
+      <Button guid="guidTabkeeperCommandSet" id="ImportIntoCurrentPinSet" priority="0x0106" type="Button"><Parent guid="guidTabkeeperCommandSet" id="TabkeeperGroup" /><Strings><ButtonText>Import Tab Set to This Branch</ButtonText></Strings></Button>
+      <Button guid="guidTabkeeperCommandSet" id="CopyCurrentPinsToBranch" priority="0x0107" type="Button"><Parent guid="guidTabkeeperCommandSet" id="TabkeeperGroup" /><Strings><ButtonText>Copy Tab Set to Branch</ButtonText></Strings></Button>
+      <Button guid="guidTabkeeperCommandSet" id="CleanUpMissingBranches" priority="0x0108" type="Button"><Parent guid="guidTabkeeperCommandSet" id="TabkeeperGroup" /><Strings><ButtonText>Clean Up Missing Branches</ButtonText></Strings></Button>
+      <Button guid="guidTabkeeperCommandSet" id="OpenActivityLog" priority="0x0109" type="Button"><Parent guid="guidTabkeeperCommandSet" id="TabkeeperGroup" /><Strings><ButtonText>Open Activity Log</ButtonText></Strings></Button>
+    </Buttons>
+  </Commands>
+  <Symbols>
+    <GuidSymbol name="guidTabkeeperPackage" value="{75ff4b05-e5bc-4143-a7ca-86e17d6aa50b}" />
+    <GuidSymbol name="guidTabkeeperCommandSet" value="{a7a42bc7-ea42-4f56-945d-dd2fa64bc3cb}">
+      <IDSymbol name="TabkeeperGroup" value="0x1000" />
+      <IDSymbol name="EnableTabkeeper" value="0x0100" />
+      <IDSymbol name="SynchronizeNow" value="0x0101" />
+      <IDSymbol name="ClearCurrentTabkeeper" value="0x0102" />
+      <IDSymbol name="OpenSavedPinState" value="0x0103" />
+      <IDSymbol name="ManageBranchRules" value="0x0104" />
+      <IDSymbol name="ExportCurrentPinSet" value="0x0105" />
+      <IDSymbol name="ImportIntoCurrentPinSet" value="0x0106" />
+      <IDSymbol name="CopyCurrentPinsToBranch" value="0x0107" />
+      <IDSymbol name="CleanUpMissingBranches" value="0x0108" />
+      <IDSymbol name="OpenActivityLog" value="0x0109" />
+    </GuidSymbol>
+  </Symbols>
+</CommandTable>

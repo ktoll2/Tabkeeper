@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json.schemastore.org/vs-settings-registration.json",
+  "title": "Tabkeeper",
+  "categories": {
+    "tabkeeper": {
+      "title": "Tabkeeper"
+    }
+  },
+  "properties": {
+    "tabkeeper.enabled": {
+      "title": "Enable Tabkeeper",
+      "description": "Turn automatic branch-to-tab synchronization on or off.",
+      "type": "boolean",
+      "default": true
+    },
+    "tabkeeper.preserveActiveDocument": {
+      "title": "Preserve active document",
+      "description": "After restoring pins, return focus to the document that was active before the branch switch.",
+      "type": "boolean",
+      "default": true
+    },
+    "tabkeeper.scope": {
+      "title": "Managed scope",
+      "description": "Whether pinned tabs are managed anywhere in the repository or only below the solution folder.",
+      "type": "string",
+      "enum": [ "repository", "solutionDirectory" ],
+      "enumItemLabels": [ "Repository", "Solution directory" ],
+      "default": "repository"
+    },
+    "tabkeeper.maximumRestoredTabs": {
+      "title": "Maximum restored tabs",
+      "description": "Upper limit on how many saved documents are opened and pinned for one branch switch.",
+      "type": "integer",
+      "default": 25,
+      "minimum": 1,
+      "maximum": 100
+    },
+    "tabkeeper.restoreDelayMilliseconds": {
+      "title": "Restore delay (ms)",
+      "description": "Wait after a detected checkout before restoring pins, so a slow checkout can finish writing files.",
+      "type": "integer",
+      "default": 500,
+      "minimum": 0,
+      "maximum": 5000
+    },
+    "tabkeeper.missingFileBehavior": {
+      "title": "Missing file behavior",
+      "description": "What to do when a saved pinned file does not exist on the destination branch. Missing files are always logged.",
+      "type": "string",
+      "enum": [ "skip", "showMessage" ],
+      "enumItemLabels": [ "Skip", "Show message" ],
+      "default": "skip"
+    },
+    "tabkeeper.detachedHeadBehavior": {
+      "title": "Detached HEAD behavior",
+      "description": "Keep a per-commit pin set while HEAD is detached, or always unpin instead.",
+      "type": "string",
+      "enum": [ "keepCommitPins", "clearPins" ],
+      "enumItemLabels": [ "Keep commit pins", "Clear pins" ],
+      "default": "keepCommitPins"
+    },
+    "tabkeeper.pollingIntervalSeconds": {
+      "title": "Fallback polling interval (seconds)",
+      "description": "How often Git HEAD is re-checked when the filesystem watcher misses a change.",
+      "type": "integer",
+      "default": 2,
+      "minimum": 1,
+      "maximum": 60
+    },
+    "tabkeeper.rules": {
+      "title": "Branch rules (JSON)",
+      "description": "A JSON array of { \"pattern\", \"pinSetName\", \"enabled\" } objects. The most specific matching pattern wins; a disabled rule excludes matching branches from synchronization.",
+      "type": "string",
+      "default": "[]"
+    }
+  }
+}
