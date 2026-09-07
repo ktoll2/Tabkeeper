@@ -7,6 +7,8 @@ Thank you for contributing. Please open an issue before starting substantial wor
 - .NET SDK 10.0 or later
 - Visual Studio 2022 or 2026 with the Visual Studio extension development workload, for packaging and debugging the VSIX on Windows
 
+`Tabkeeper.Vsix` targets .NET Framework 4.8 (Visual Studio loads in-process extensions on the Framework). Its reference assemblies come from the `Microsoft.NETFramework.ReferenceAssemblies` package, so no separate 4.8 targeting pack is required; the 4.8 runtime is already part of Windows and every Visual Studio install. `Tabkeeper.Core` targets `netstandard2.0`/`net10.0` and the tests target `net10.0`.
+
 ## Build and test
 
 Run these commands from the repository root:
@@ -23,11 +25,20 @@ The VSIX packaging target runs on Windows. Its output is under `Tabkeeper.Vsix/b
 
 ## Versioning and releases
 
-There is no version to maintain. The release workflows derive `YEAR.MONTH.DAY.<run number>`, stamp it
-into `source.extension.vsixmanifest` and the assemblies, create the tag, and publish the GitHub
-release. A code change merged to `main` publishes a release; a push to the `prerelease` branch
-publishes a preview. Do not edit the `Version` attribute in `source.extension.vsixmanifest` by hand -
-its committed value (`0.1.0`) is only used by local developer builds.
+There is no version to maintain. Every release build derives `YEAR.MONTH.DAY.<GitHub run number>`
+and stamps it into `source.extension.vsixmanifest` and the assemblies, so package versions are always
+valid and strictly increasing. Do not edit the `Version` attribute in the manifest by hand; its
+committed value (`0.1.0`) is only used by local developer builds.
+
+| Workflow | Trigger | Result |
+| --- | --- | --- |
+| `ci.yml` | any push or pull request | build + test on Windows; uploads the `.vsix` as a run artifact |
+| `prerelease.yml` | push to the `prerelease` branch | GitHub pre-release `v<version>-pre` with the `.vsix` |
+| `release.yml` | a commit touching extension source (`Tabkeeper.Core/**`, `Tabkeeper.Vsix/**`, `Tabkeeper.slnx`, `global.json`) lands on `main` | GitHub release `v<version>` with the `.vsix` and auto-generated notes |
+
+Both release workflows create their tag automatically, sign the `.vsix`, and attach a
+`Tabkeeper.vsix.sha256` checksum file (the hash is also added to the notes). Documentation-only
+merges to `main` do not release.
 
 ## Change guidelines
 
