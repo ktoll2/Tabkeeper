@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/ktoll2/Tabkeeper/actions/workflows/ci.yml/badge.svg)](https://github.com/ktoll2/Tabkeeper/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/ktoll2/Tabkeeper?display_name=tag&logo=github)](https://github.com/ktoll2/Tabkeeper/releases/latest)
-[![Prerelease](https://img.shields.io/github/v/release/ktoll2/Tabkeeper?include_prereleases&display_name=tag&label=prerelease)](https://github.com/ktoll2/Tabkeeper/releases)
+[![Prerelease](https://img.shields.io/github/v/release/ktoll2/Tabkeeper?include_prereleases&display_name=tag&filter=*-pre&label=prerelease)](https://github.com/ktoll2/Tabkeeper/releases)
 [![License: MIT](https://img.shields.io/github/license/ktoll2/Tabkeeper)](LICENSE)
 
 Tabkeeper is a Visual Studio extension that gives each Git branch its own set of pinned document
