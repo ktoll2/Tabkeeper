@@ -5,6 +5,7 @@
         <File Path=".gitignore" />
         <File Path="CONTRIBUTING.md" />
         <File Path="global.json" />
+        <File Path="LICENSE" />
         <File Path="README.md" />
     </Folder>
     <Project Path="Tabkeeper.Core.Tests/Tabkeeper.Core.Tests.csproj" />
