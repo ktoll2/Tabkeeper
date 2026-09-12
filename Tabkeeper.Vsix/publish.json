@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json.schemastore.org/vsix-publish",
+  "categories": [ "productivity", "coding" ],
+  "identity": {
+    "internalName": "tabkeeper"
+  },
+  "overview": "overview.md",
+  "priceCategory": "free",
+  "publisher": "KirkTolleshaug",
+  "private": false,
+  "qna": true,
+  "repo": "https://github.com/ktoll2/Tabkeeper"
+}

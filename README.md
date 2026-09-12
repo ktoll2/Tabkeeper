@@ -45,6 +45,14 @@ nothing is lost. A branch you have never set up starts with no pinned tabs. If a
 still writing files when tabs are restored, Tabkeeper retries for a few seconds so late-arriving
 files are still pinned.
 
+Before switching branches, `GitRepository.cs` and `GitBranchReader.cs` are pinned:
+
+![Pinned tabs before a branch switch](Tabkeeper.Vsix/Resources/Screenshot-PinnedTabs.png)
+
+After switching branches, that branch's own saved pins take over:
+
+![Pinned tabs after a branch switch](Tabkeeper.Vsix/Resources/Screenshot-PinnedTabs-AfterSwitch.png)
+
 Commands are under **Tools > Tabkeeper**:
 
 | Command | Does |
@@ -75,6 +83,8 @@ Commands are under **Tools > Tabkeeper**:
 | Branch rules (JSON) | `[]` | See below. |
 
 Changes take effect on the next branch check; **Sync Tabkeeper Now** applies them at once.
+
+![Settings page](Tabkeeper.Vsix/Resources/Screenshot-Settings.png)
 
 ## Branch rules
 

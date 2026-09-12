@@ -50,6 +50,8 @@
     <!-- Extension icon and preview image, referenced by source.extension.vsixmanifest. -->
     <Content Include="Resources\Icon.png" IncludeInVSIX="true" />
     <Content Include="Resources\PreviewImage.png" IncludeInVSIX="true" />
+    <!-- License file, referenced by source.extension.vsixmanifest's <License> element. -->
+    <Content Include="..\LICENSE" Link="LICENSE" IncludeInVSIX="true" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
