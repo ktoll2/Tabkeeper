@@ -36,9 +36,9 @@ committed value (`0.1.0`) is only used by local developer builds.
 | `prerelease.yml` | push to the `prerelease` branch | GitHub pre-release `v<version>-pre` with the `.vsix` |
 | `release.yml` | a commit touching extension source (`Tabkeeper.Core/**`, `Tabkeeper.Vsix/**`, `Tabkeeper.slnx`, `global.json`) lands on `main` | GitHub release `v<version>` with the `.vsix` and auto-generated notes |
 
-Both release workflows create their tag automatically, sign the `.vsix`, and attach a
-`Tabkeeper.vsix.sha256` checksum file (the hash is also added to the notes). Documentation-only
-merges to `main` do not release.
+Both release workflows create their tag automatically and attach a `Tabkeeper.vsix.sha256`
+checksum file (the hash is also added to the notes). Documentation-only merges to `main` do
+not release.
 
 ## Change guidelines
 

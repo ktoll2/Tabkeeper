@@ -37,8 +37,6 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
     <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.14.40265" PrivateAssets="all" />
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="18.5.40034" PrivateAssets="all" />
-    <!-- vsixsigntool.exe, used by the SignVsix target when a certificate is supplied. -->
-    <PackageReference Include="Microsoft.VSSDK.Vsixsigntool" Version="17.10.34916.79" PrivateAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
 
   <ItemGroup>
@@ -62,29 +60,5 @@
 
   <!-- SDK-style projects do not invoke the VSSDK's PrepareForRun target automatically. -->
   <Target Name="PackageVsix" AfterTargets="Build" DependsOnTargets="GeneratePkgDef;CreateVsixContainer" Condition="'$(OS)' == 'Windows_NT'" />
-
-  <!--
-    Authenticode-signs the built .vsix when a certificate is supplied via:
-      -p:VsixCertificatePath=path\to\cert.pfx  -p:VsixCertificatePassword=***
-    (or VsixCertificateThumbprint for a cert already in the machine/user store).
-    Without a certificate this target is a no-op, so unsigned local and CI builds still work.
-  -->
-  <Target Name="SignVsix" AfterTargets="PackageVsix"
-          Condition="'$(OS)' == 'Windows_NT' and ('$(VsixCertificatePath)' != '' or '$(VsixCertificateThumbprint)' != '')">
-    <PropertyGroup>
-      <_VsixToSign Condition="'$(_VsixToSign)' == ''">$(TargetDir)$(TargetName).vsix</_VsixToSign>
-      <_VsixSignTool>$(PkgMicrosoft_VSSDK_Vsixsigntool)\tools\vssdk\vsixsigntool.exe</_VsixSignTool>
-      <_VsixSignCert Condition="'$(VsixCertificatePath)' != ''">/f "$(VsixCertificatePath)" /p "$(VsixCertificatePassword)"</_VsixSignCert>
-      <_VsixSignCert Condition="'$(VsixCertificateThumbprint)' != ''">/sha1 $(VsixCertificateThumbprint)</_VsixSignCert>
-	  <!-- Timestamping needs network; set VsixTimestampUrl in CI, leave empty for offline builds. -->
-      <!-- Optional RFC3161 timestamp. Left unset by CI: vsixsigntool 17.10 returns 0x80004005
-           whenever a timestamp is requested. Wire this up only with a signer that supports it. -->
-      <_VsixTimestamp Condition="'$(VsixTimestampUrl)' != ''">/tr $(VsixTimestampUrl) /td sha256</_VsixTimestamp>
-    </PropertyGroup>
-    <Error Text="vsixsigntool.exe was not found at '$(_VsixSignTool)'." Condition="!Exists('$(_VsixSignTool)')" />
-    <Error Text="VSIX to sign was not found at '$(_VsixToSign)'." Condition="!Exists('$(_VsixToSign)')" />
-    <Message Importance="high" Text="Signing $(_VsixToSign)" />
-    <Exec Command="&quot;$(_VsixSignTool)&quot; sign $(_VsixSignCert) /fd sha256 $(_VsixTimestamp) &quot;$(_VsixToSign)&quot;" />
-  </Target>
 
 </Project>
