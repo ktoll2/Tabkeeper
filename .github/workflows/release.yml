@@ -107,12 +107,12 @@ jobs:
             Tabkeeper.Vsix/bin/Release/**/*.vsix
             Tabkeeper.Vsix/bin/Release/**/*.vsix.sha256
 
-      - name: Publish to VS Marketplace
-        if: ${{ secrets.VS_MARKETPLACE_PAT != '' }}
-        shell: pwsh
-        env:
-          VS_MARKETPLACE_PAT: ${{ secrets.VS_MARKETPLACE_PAT }}
-        run: |
-          $publisher = Get-ChildItem "$env:USERPROFILE\.nuget\packages\microsoft.vssdk.buildtools" -Recurse -Filter VsixPublisher.exe | Select-Object -First 1
-          $vsix = Get-ChildItem Tabkeeper.Vsix/bin/Release -Recurse -Filter *.vsix | Select-Object -First 1
-          & $publisher.FullName publish -payload $vsix.FullName -publishManifest Tabkeeper.Vsix/publish.json -personalAccessToken $env:VS_MARKETPLACE_PAT
+      #- name: Publish to VS Marketplace
+      #  if: ${{ secrets.VS_MARKETPLACE_PAT != '' }}
+      #  shell: pwsh
+      #  env:
+      #    VS_MARKETPLACE_PAT: ${{ secrets.VS_MARKETPLACE_PAT }}
+      #  run: |
+      #    $publisher = Get-ChildItem "$env:USERPROFILE\.nuget\packages\microsoft.vssdk.buildtools" -Recurse -Filter VsixPublisher.exe | Select-Object -First 1
+      #    $vsix = Get-ChildItem Tabkeeper.Vsix/bin/Release -Recurse -Filter *.vsix | Select-Object -First 1
+      #    & $publisher.FullName publish -payload $vsix.FullName -publishManifest Tabkeeper.Vsix/publish.json -personalAccessToken $env:VS_MARKETPLACE_PAT
