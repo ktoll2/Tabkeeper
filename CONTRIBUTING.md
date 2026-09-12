@@ -25,15 +25,23 @@ The VSIX packaging target runs on Windows. Its output is under `Tabkeeper.Vsix/b
 
 ## Versioning and releases
 
-There is no version to maintain. Every release build derives `YEAR.MONTH.DAY.<GitHub run number>`
-and stamps it into `source.extension.vsixmanifest` and the assemblies, so package versions are always
-valid and strictly increasing. Do not edit the `Version` attribute in the manifest by hand; its
-committed value (`0.1.0`) is only used by local developer builds.
+Tabkeeper uses semantic versioning. The single source of truth is
+`Tabkeeper.Vsix/source.extension.vsixmanifest`'s `Identity/@Version`
+(`MAJOR.MINOR.PATCH`) - bump it by hand as part of the change that should ship as a
+release:
+
+- **PATCH** for a bug fix with no behavior change beyond the fix.
+- **MINOR** for a backwards-compatible feature or setting addition.
+- **MAJOR** for a breaking change (a setting or branch-rule format changes incompatibly,
+  a command is removed, etc.).
+
+`release.yml` reads that version and **fails the build** if it wasn't increased since
+the last release tag - bump it before merging to `main`, not after.
 
 | Workflow | Trigger | Result |
 | --- | --- | --- |
 | `ci.yml` | any push or pull request | build + test on Windows; uploads the `.vsix` as a run artifact |
-| `prerelease.yml` | push to the `prerelease` branch | GitHub pre-release `v<version>-pre` with the `.vsix` |
+| `prerelease.yml` | push to the `prerelease` branch | GitHub pre-release `v<version>-pre.<run>` with the `.vsix`. The manifest version isn't required to change per push - the workflow appends the GitHub run number as a 4th version segment so repeated prerelease pushes still get a unique, increasing VSIX version without a manual bump each time. |
 | `release.yml` | a commit touching extension source (`Tabkeeper.Core/**`, `Tabkeeper.Vsix/**`, `Tabkeeper.slnx`, `global.json`) lands on `main` | GitHub release `v<version>` with the `.vsix` and auto-generated notes |
 
 Both release workflows create their tag automatically and attach a `Tabkeeper.vsix.sha256`

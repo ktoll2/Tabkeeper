@@ -1,7 +1,9 @@
 name: Prerelease
 
 # Every push to the 'prerelease' branch publishes a GitHub pre-release.
-# Version is derived (YYYY.M.D.<run>), never hand-maintained.
+# Base version comes from source.extension.vsixmanifest's Identity/@Version (bumped by
+# hand); this workflow appends the run number as a 4th segment so repeated pushes
+# without a manual bump still get a unique, increasing VSIX version.
 on:
   push:
     branches: [prerelease]
@@ -23,21 +25,23 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Compute version
+      - name: Stamp prerelease version
         id: version
         shell: pwsh
         run: |
-          $v = "{0}.{1}" -f (Get-Date -Format 'yyyy.M.d'), ${{ github.run_number }}
-          "vsix=$v"      >> $env:GITHUB_OUTPUT
-          "tag=v$v-pre"  >> $env:GITHUB_OUTPUT
-
-      - name: Stamp VSIX version
-        shell: pwsh
-        run: |
           $manifest = 'Tabkeeper.Vsix/source.extension.vsixmanifest'
-          (Get-Content $manifest -Raw) -replace '(<Identity\b[^>]*\bVersion=")[^"]*(")', "`${1}${{ steps.version.outputs.vsix }}`${2}" |
+          $content = Get-Content $manifest -Raw
+          if ($content -notmatch '<Identity\b[^>]*\bVersion="([^"]+)"') {
+            throw "Could not find Identity/@Version in $manifest"
+          }
+          $baseVersion = $Matches[1]
+          $vsixVersion = "$baseVersion.${{ github.run_number }}"
+          $content -replace '(<Identity\b[^>]*\bVersion=")[^"]*(")', "`${1}$vsixVersion`${2}" |
             Set-Content $manifest -NoNewline
-          Write-Host "Prerelease ${{ steps.version.outputs.tag }} (VSIX ${{ steps.version.outputs.vsix }})"
+
+          "vsix=$vsixVersion"                              >> $env:GITHUB_OUTPUT
+          "tag=v$baseVersion-pre.${{ github.run_number }}"  >> $env:GITHUB_OUTPUT
+          Write-Host "Prerelease v$baseVersion-pre.${{ github.run_number }} (VSIX $vsixVersion)"
 
       - name: Restore dependencies
         run: dotnet restore Tabkeeper.slnx

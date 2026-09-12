@@ -1,7 +1,8 @@
 name: Release
 
 # Publishes a stable release whenever extension code is merged to main.
-# Version is derived (YYYY.M.D.<run>), never hand-maintained.
+# Version comes from source.extension.vsixmanifest's Identity/@Version (MAJOR.MINOR.PATCH,
+# bumped by hand). This workflow fails if that version wasn't increased since the last release.
 on:
   push:
     branches: [main]
@@ -23,27 +24,39 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
 
-      - name: Compute version
+      - name: Read and verify version
         id: version
         shell: pwsh
         run: |
-          $v = "{0}.{1}" -f (Get-Date -Format 'yyyy.M.d'), ${{ github.run_number }}
-          "vsix=$v"  >> $env:GITHUB_OUTPUT
-          "tag=v$v"  >> $env:GITHUB_OUTPUT
-
-      - name: Stamp VSIX version
-        shell: pwsh
-        run: |
           $manifest = 'Tabkeeper.Vsix/source.extension.vsixmanifest'
-          (Get-Content $manifest -Raw) -replace '(<Identity\b[^>]*\bVersion=")[^"]*(")', "`${1}${{ steps.version.outputs.vsix }}`${2}" |
-            Set-Content $manifest -NoNewline
-          Write-Host "Release ${{ steps.version.outputs.tag }} (VSIX ${{ steps.version.outputs.vsix }})"
+          if ((Get-Content $manifest -Raw) -notmatch '<Identity\b[^>]*\bVersion="([^"]+)"') {
+            throw "Could not find Identity/@Version in $manifest"
+          }
+          $version = $Matches[1]
+
+          git fetch --tags --quiet
+          $lastTag = git tag --list 'v*' |
+            Where-Object { $_ -notmatch '-pre' } |
+            ForEach-Object { $_.TrimStart('v') } |
+            Where-Object { $_ -as [version] } |
+            Sort-Object { [version]$_ } |
+            Select-Object -Last 1
+
+          if ($lastTag -and [version]$version -le [version]$lastTag) {
+            throw "source.extension.vsixmanifest Identity/@Version ($version) must be greater than the last release ($lastTag). Bump the Version attribute before releasing."
+          }
+
+          "vsix=$version" >> $env:GITHUB_OUTPUT
+          "tag=v$version" >> $env:GITHUB_OUTPUT
+          Write-Host "Release v$version"
 
       - name: Restore dependencies
         run: dotnet restore Tabkeeper.slnx

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="Tabkeeper.75ff4b05-e5bc-4143-a7ca-86e17d6aa50b" Version="0.1.0" Language="en-US" Publisher="Kirk Tolleshaug" />
+    <Identity Id="Tabkeeper.75ff4b05-e5bc-4143-a7ca-86e17d6aa50b" Version="1.0.0" Language="en-US" Publisher="Kirk Tolleshaug" />
     <DisplayName>Tabkeeper</DisplayName>
     <Description xml:space="preserve">Keeps a set of pinned document tabs per Git branch and swaps them when you switch branches.</Description>
     <MoreInfo>https://github.com/ktoll2/Tabkeeper</MoreInfo>
