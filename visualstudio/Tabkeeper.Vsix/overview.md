@@ -9,11 +9,11 @@ beyond that, and never touches file contents.
 
 Before switching branches, `GitRepository.cs` and `GitBranchReader.cs` are pinned:
 
-![Pinned tabs before a branch switch](https://raw.githubusercontent.com/ktoll2/Tabkeeper/main/Tabkeeper.Vsix/Resources/Screenshot-PinnedTabs.png)
+![Pinned tabs before a branch switch](https://raw.githubusercontent.com/ktoll2/Tabkeeper/main/visualstudio/Tabkeeper.Vsix/Resources/Screenshot-PinnedTabs.png)
 
 After switching branches, that branch's own saved pins take over:
 
-![Pinned tabs after a branch switch](https://raw.githubusercontent.com/ktoll2/Tabkeeper/main/Tabkeeper.Vsix/Resources/Screenshot-PinnedTabs-AfterSwitch.png)
+![Pinned tabs after a branch switch](https://raw.githubusercontent.com/ktoll2/Tabkeeper/main/visualstudio/Tabkeeper.Vsix/Resources/Screenshot-PinnedTabs-AfterSwitch.png)
 
 ## How it works
 
@@ -49,7 +49,7 @@ the solution folder), a cap on restored tabs, a restore delay for slow checkouts
 missing-file behavior, detached HEAD behavior, and JSON branch rules that let related
 branches (for example `feature/*`) share one tab set.
 
-![Settings page](https://raw.githubusercontent.com/ktoll2/Tabkeeper/main/Tabkeeper.Vsix/Resources/Screenshot-Settings.png)
+![Settings page](https://raw.githubusercontent.com/ktoll2/Tabkeeper/main/visualstudio/Tabkeeper.Vsix/Resources/Screenshot-Settings.png)
 
 ## Your data
 
