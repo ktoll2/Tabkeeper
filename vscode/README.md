@@ -1,7 +1,7 @@
 # Tabkeeper (VS Code)
 
 Tabkeeper gives each Git branch its own set of pinned editor tabs. Switch branches and your
-pinned tabs switch with you — the tabs pinned on the branch you leave are saved, and the ones
+pinned tabs switch with you: the tabs pinned on the branch you leave are saved, and the ones
 saved for the branch you arrive on are opened and pinned.
 
 Tabkeeper only changes which tabs are pinned. It never closes unpinned tabs, edits file contents,
@@ -88,9 +88,9 @@ Settings UI's array editor):
 ]
 ```
 
-- `pattern` — a case-insensitive branch glob (`*` matches any run of characters, `?` matches one).
-- `pinSetName` — the shared set that matching branches use instead of their own.
-- `enabled` — `true` shares the set; `false` leaves matching branches untouched.
+- `pattern`: a case-insensitive branch glob (`*` matches any run of characters, `?` matches one).
+- `pinSetName`: the shared set that matching branches use instead of their own.
+- `enabled`: `true` shares the set; `false` leaves matching branches untouched.
 
 The most specific pattern wins, so `feature/login` uses its own rule ahead of `feature/*`.
 
@@ -126,8 +126,8 @@ previous active document afterward (unless `preserveActiveDocument` is off).
 **Tabkeeper: Open Activity Log** shows what happened: branch switches, restores, skipped files,
 and warnings.
 
-- `Missing: src/App/Old.ts` — a saved tab's file doesn't exist on the branch, so it was skipped.
-- `No Git repository found for the active workspace` — no workspace folder is inside a Git working
+- `Missing: src/App/Old.ts`: a saved tab's file doesn't exist on the branch, so it was skipped.
+- `No Git repository found for the active workspace`: no workspace folder is inside a Git working
   tree.
 
 If a setting doesn't seem to apply, run **Tabkeeper: Sync Now**.
