@@ -5,7 +5,7 @@
     <DisplayName>Tabkeeper</DisplayName>
     <Description xml:space="preserve">Keeps a set of pinned document tabs per Git branch and swaps them when you switch branches.</Description>
     <MoreInfo>https://github.com/ktoll2/Tabkeeper</MoreInfo>
-    <License>..\LICENSE</License>
+    <License>LICENSE</License>
     <GettingStartedGuide>https://github.com/ktoll2/Tabkeeper/blob/main/visualstudio/README.md#using-it</GettingStartedGuide>
     <ReleaseNotes>https://github.com/ktoll2/Tabkeeper/releases</ReleaseNotes>
     <Icon>Resources\Icon.png</Icon>

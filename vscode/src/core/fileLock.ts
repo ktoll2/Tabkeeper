@@ -50,10 +50,12 @@ export async function withFileLock<T>(
     // The lock file's directory may not exist yet on a fresh install; create it once up front so
     // the very first acquisition attempt below does not fail with ENOENT.
     await fs.promises.mkdir(path.dirname(lockPath), { recursive: true });
+    let acquired = false;
     for (;;) {
         try {
             const handle = await fs.promises.open(lockPath, "wx");
             await handle.close();
+            acquired = true;
             break;
         } catch (error) {
             if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
@@ -80,10 +82,14 @@ export async function withFileLock<T>(
     try {
         return await operation();
     } finally {
-        try {
-            await fs.promises.unlink(lockPath);
-        } catch {
-            // Already removed; nothing to clean up.
+        // Only the process that actually acquired the lock may remove it; a timed-out caller that
+        // proceeded unsynchronized must not delete another process's still-held lock file.
+        if (acquired) {
+            try {
+                await fs.promises.unlink(lockPath);
+            } catch {
+                // Already removed; nothing to clean up.
+            }
         }
     }
 }

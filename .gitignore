@@ -12,6 +12,10 @@ ehthumbs.db
 *.swo
 *~
 
+# Visual Studio cache/options directory (created here if the .slnx is opened from the repo root
+# instead of visualstudio/, which has its own .gitignore entry for this)
+.vs/
+
 # Local env/secrets
 .env
 .env.local
