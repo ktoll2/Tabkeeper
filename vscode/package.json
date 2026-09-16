@@ -1,5 +1,5 @@
 {
-  "name": "tabkeeper",
+  "name": "Tabkeeper",
   "displayName": "Tabkeeper",
   "description": "Keeps a set of pinned editor tabs per Git branch and swaps them when you switch branches.",
   "version": "1.0.0",
