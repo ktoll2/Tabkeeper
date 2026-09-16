@@ -8,6 +8,15 @@ body:
     attributes:
       value: |
         Do not include repository contents, local paths, or secrets. You may attach a redacted activity-log excerpt if it helps reproduce the problem.
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Visual Studio
+        - VS Code / VSCodium
+    validations:
+      required: true
   - type: input
     id: extension-version
     attributes:
@@ -16,10 +25,10 @@ body:
     validations:
       required: true
   - type: input
-    id: visual-studio-version
+    id: host-version
     attributes:
-      label: Visual Studio version
-      description: Include edition and full version from Help > About.
+      label: Host version
+      description: Visual Studio edition and full version (Help > About), or VS Code/VSCodium version (Help > About).
     validations:
       required: true
   - type: dropdown
@@ -59,4 +68,4 @@ body:
     id: logs
     attributes:
       label: Redacted activity-log excerpt (optional)
-      description: Stored at %LOCALAPPDATA%\Tabkeeper\activity.log.
+      description: 'Visual Studio - %LOCALAPPDATA%\Tabkeeper\activity.log. VS Code/VSCodium - run "Tabkeeper: Open Activity Log".'

@@ -4,6 +4,16 @@ title: "feature: "
 labels:
   - enhancement
 body:
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Visual Studio
+        - VS Code / VSCodium
+        - Both / platform-agnostic
+    validations:
+      required: true
   - type: textarea
     id: problem
     attributes:

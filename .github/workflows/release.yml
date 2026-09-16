@@ -1,25 +1,34 @@
 name: Release
 
-# Publishes a stable release whenever extension code is merged to main.
-# Version comes from source.extension.vsixmanifest's Identity/@Version (MAJOR.MINOR.PATCH,
-# bumped by hand). This workflow fails if that version wasn't increased since the last release.
+# Manual only: this never runs on push or pull_request. Builds both platforms in one run, each
+# through its own Makefile. Choose "release" or "prerelease" to also publish both .vsix packages
+# to one shared GitHub release. The release tag and the "version must increase" check are driven
+# by the Visual Studio side (visualstudio/Tabkeeper.Vsix/source.extension.vsixmanifest's
+# Identity/@Version, bumped by hand); the VS Code .vsix rides along on that same release using its
+# own independently-versioned build from vscode/package.json.
 on:
-  push:
-    branches: [main]
-    paths:
-      - "Tabkeeper.Core/**"
-      - "Tabkeeper.Vsix/**"
-      - "Tabkeeper.slnx"
-      - "global.json"
-      - ".github/workflows/release.yml"
   workflow_dispatch:
+    inputs:
+      release:
+        description: "Publish a GitHub release for this build?"
+        type: choice
+        options:
+          - none
+          - prerelease
+          - release
+        default: none
 
 permissions:
   contents: write
 
 jobs:
-  release:
+  visualstudio:
     runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: visualstudio
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
 
     steps:
       - name: Check out source
@@ -32,63 +41,83 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Read and verify version
+      # windows-latest ships PowerShell but not GNU Make; Chocolatey (which windows-latest does
+      # ship) installs it in a few seconds.
+      - name: Install GNU Make
+        run: choco install make --no-progress -y
+
+      - name: Determine version
         id: version
         shell: pwsh
         run: |
-          $manifest = 'Tabkeeper.Vsix/source.extension.vsixmanifest'
-          if ((Get-Content $manifest -Raw) -notmatch '<Identity\b[^>]*\bVersion="([^"]+)"') {
-            throw "Could not find Identity/@Version in $manifest"
+          $baseVersion = make current-version
+
+          if ('${{ inputs.release }}' -eq 'prerelease') {
+            $vsixVersion = "$baseVersion.${{ github.run_number }}"
+            "tag=v$baseVersion-pre.${{ github.run_number }}" >> $env:GITHUB_OUTPUT
+          } elseif ('${{ inputs.release }}' -eq 'release') {
+            git fetch --tags --quiet
+            $lastTag = git tag --list 'v*' |
+              ForEach-Object { $_.TrimStart('v') } |
+              Where-Object { $_ -match '^\d+\.\d+\.\d+$' } |
+              Sort-Object { [version]$_ } |
+              Select-Object -Last 1
+
+            if ($lastTag -and [version]$baseVersion -le [version]$lastTag) {
+              throw "source.extension.vsixmanifest Identity/@Version ($baseVersion) must be greater than the last release ($lastTag). Bump the Version attribute before releasing."
+            }
+
+            $vsixVersion = $baseVersion
+            "tag=v$baseVersion" >> $env:GITHUB_OUTPUT
+          } else {
+            $vsixVersion = $baseVersion
+            "tag=" >> $env:GITHUB_OUTPUT
           }
-          $version = $Matches[1]
 
-          git fetch --tags --quiet
-          $lastTag = git tag --list 'v*' |
-            ForEach-Object { $_.TrimStart('v') } |
-            Where-Object { $_ -match '^\d+\.\d+\.\d+$' } |
-            Sort-Object { [version]$_ } |
-            Select-Object -Last 1
+          "vsix=$vsixVersion" >> $env:GITHUB_OUTPUT
+          Write-Host "Version $vsixVersion"
 
-          if ($lastTag -and [version]$version -le [version]$lastTag) {
-            throw "source.extension.vsixmanifest Identity/@Version ($version) must be greater than the last release ($lastTag). Bump the Version attribute before releasing."
-          }
+      - name: Stamp version
+        if: inputs.release != 'none'
+        run: make stamp-version VERSION=${{ steps.version.outputs.vsix }}
 
-          "vsix=$version" >> $env:GITHUB_OUTPUT
-          "tag=v$version" >> $env:GITHUB_OUTPUT
-          Write-Host "Release v$version"
+      - name: Build and test
+        run: make test
 
-      - name: Restore dependencies
-        run: dotnet restore Tabkeeper.slnx
-
-      - name: Build release VSIX
-        run: dotnet build Tabkeeper.slnx --configuration Release --no-restore -p:Version=${{ steps.version.outputs.vsix }}
-
-      - name: Run tests
-        run: dotnet test Tabkeeper.slnx --configuration Release --no-build --no-restore
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tabkeeper-VSIX
+          path: visualstudio/Tabkeeper.Vsix/bin/Release/**/*.vsix
+          if-no-files-found: error
 
       - name: Compute checksum
         id: hash
+        if: inputs.release != 'none'
         shell: pwsh
         run: |
           $vsix = Get-ChildItem Tabkeeper.Vsix/bin/Release -Recurse -Filter *.vsix | Select-Object -First 1
           $sha  = (Get-FileHash $vsix.FullName -Algorithm SHA256).Hash.ToLower()
           "$sha  $($vsix.Name)" | Set-Content "$($vsix.FullName).sha256" -NoNewline
           "sha256=$sha" >> $env:GITHUB_OUTPUT
+          "vsix=$($vsix.Name)" >> $env:GITHUB_OUTPUT
 
       - name: Publish GitHub release
+        if: inputs.release != 'none'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: ${{ steps.version.outputs.tag }}
+          prerelease: ${{ inputs.release == 'prerelease' }}
           generate_release_notes: true
           append_body: true
           body: |
             ---
-            `Tabkeeper.vsix` SHA-256: `${{ steps.hash.outputs.sha256 }}`
+            `${{ steps.hash.outputs.vsix }}` SHA-256: `${{ steps.hash.outputs.sha256 }}`
           fail_on_unmatched_files: true
           files: |
-            Tabkeeper.Vsix/bin/Release/**/*.vsix
-            Tabkeeper.Vsix/bin/Release/**/*.vsix.sha256
+            visualstudio/Tabkeeper.Vsix/bin/Release/**/*.vsix
+            visualstudio/Tabkeeper.Vsix/bin/Release/**/*.vsix.sha256
 
       #- name: Publish to VS Marketplace
       #  if: ${{ secrets.VS_MARKETPLACE_PAT != '' }}
@@ -99,3 +128,66 @@ jobs:
       #    $publisher = Get-ChildItem "$env:USERPROFILE\.nuget\packages\microsoft.vssdk.buildtools" -Recurse -Filter VsixPublisher.exe | Select-Object -First 1
       #    $vsix = Get-ChildItem Tabkeeper.Vsix/bin/Release -Recurse -Filter *.vsix | Select-Object -First 1
       #    & $publisher.FullName publish -payload $vsix.FullName -publishManifest Tabkeeper.Vsix/publish.json -personalAccessToken $env:VS_MARKETPLACE_PAT
+
+  vscode:
+    needs: visualstudio
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vscode
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: vscode/package-lock.json
+
+      - name: Install dependencies
+        run: make ci
+
+      # xvfb-run gives the VS Code test host a virtual display; ubuntu-latest runners have no X
+      # server, and @vscode/test-electron launches a real (if invisible) Electron window.
+      - name: Build and test
+        run: xvfb-run -a make test
+
+      - name: Package
+        run: make package
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tabkeeper-VSIX-vscode
+          path: vscode/*.vsix
+          if-no-files-found: error
+
+      - name: Compute checksum
+        id: hash
+        if: inputs.release != 'none'
+        run: |
+          vsix="$(ls *.vsix | head -n1)"
+          sha="$(sha256sum "$vsix" | awk '{print $1}')"
+          echo "$sha  $vsix" > "$vsix.sha256"
+          echo "sha256=$sha" >> "$GITHUB_OUTPUT"
+          echo "vsix=$vsix" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub release
+        if: inputs.release != 'none'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.visualstudio.outputs.tag }}
+          name: ${{ needs.visualstudio.outputs.tag }}
+          prerelease: ${{ inputs.release == 'prerelease' }}
+          generate_release_notes: true
+          append_body: true
+          body: |
+            ---
+            `${{ steps.hash.outputs.vsix }}` SHA-256: `${{ steps.hash.outputs.sha256 }}`
+          fail_on_unmatched_files: true
+          files: |
+            vscode/*.vsix
+            vscode/*.vsix.sha256

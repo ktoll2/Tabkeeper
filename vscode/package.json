@@ -1,0 +1,198 @@
+{
+  "name": "tabkeeper",
+  "displayName": "Tabkeeper",
+  "description": "Keeps a set of pinned editor tabs per Git branch and swaps them when you switch branches.",
+  "version": "0.1.1",
+  "publisher": "KirkTolleshaug",
+  "license": "MIT",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ktoll2/Tabkeeper.git",
+    "directory": "vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/ktoll2/Tabkeeper/issues"
+  },
+  "homepage": "https://github.com/ktoll2/Tabkeeper/tree/main/vscode#readme",
+  "keywords": [
+    "git",
+    "branch",
+    "tabs",
+    "pinned tabs",
+    "checkout",
+    "productivity"
+  ],
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "tabkeeper.toggleEnabled",
+        "title": "Tabkeeper: Toggle Enabled"
+      },
+      {
+        "command": "tabkeeper.syncNow",
+        "title": "Tabkeeper: Sync Now"
+      },
+      {
+        "command": "tabkeeper.clearCurrentTabSet",
+        "title": "Tabkeeper: Clear This Branch's Tab Set"
+      },
+      {
+        "command": "tabkeeper.exportPinSet",
+        "title": "Tabkeeper: Export Tab Set..."
+      },
+      {
+        "command": "tabkeeper.importPinSet",
+        "title": "Tabkeeper: Import Tab Set to This Branch..."
+      },
+      {
+        "command": "tabkeeper.copyPinsToBranch",
+        "title": "Tabkeeper: Copy Tab Set to Branch..."
+      },
+      {
+        "command": "tabkeeper.cleanUpMissingBranches",
+        "title": "Tabkeeper: Clean Up Missing Branches"
+      },
+      {
+        "command": "tabkeeper.manageBranchRules",
+        "title": "Tabkeeper: Manage Branch Rules"
+      },
+      {
+        "command": "tabkeeper.openSavedState",
+        "title": "Tabkeeper: Open Saved Tab State"
+      },
+      {
+        "command": "tabkeeper.openActivityLog",
+        "title": "Tabkeeper: Open Activity Log"
+      }
+    ],
+    "configuration": {
+      "title": "Tabkeeper",
+      "properties": {
+        "tabkeeper.enabled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Turn automatic branch-to-tab synchronization on or off.\n\n[Open Activity Log](command:tabkeeper.openActivityLog) &nbsp;·&nbsp; [Open Saved Tab State](command:tabkeeper.openSavedState)"
+        },
+        "tabkeeper.preserveActiveDocument": {
+          "type": "boolean",
+          "default": true,
+          "description": "Return focus to the document you were on before a branch switch."
+        },
+        "tabkeeper.pinScope": {
+          "type": "string",
+          "enum": [
+            "repository",
+            "workspaceFolder"
+          ],
+          "enumDescriptions": [
+            "Manage pinned tabs anywhere in the Git repository.",
+            "Manage pinned tabs only under this workspace folder."
+          ],
+          "default": "repository",
+          "description": "How much of the working tree Tabkeeper manages tabs in."
+        },
+        "tabkeeper.maximumRestoredTabs": {
+          "type": "number",
+          "default": 25,
+          "minimum": 1,
+          "maximum": 100,
+          "description": "Cap on how many tabs one branch switch opens and pins."
+        },
+        "tabkeeper.restoreDelayMilliseconds": {
+          "type": "number",
+          "default": 500,
+          "minimum": 0,
+          "maximum": 5000,
+          "description": "Wait after a checkout before restoring, so slow checkouts finish writing files."
+        },
+        "tabkeeper.missingFileBehavior": {
+          "type": "string",
+          "enum": [
+            "skip",
+            "showMessage"
+          ],
+          "enumDescriptions": [
+            "Silently skip a saved tab whose file is gone (still logged).",
+            "Also show a warning notification for each missing file."
+          ],
+          "default": "skip",
+          "description": "What to do when a saved tab's file does not exist on the branch."
+        },
+        "tabkeeper.detachedHeadBehavior": {
+          "type": "string",
+          "enum": [
+            "keepCommitPins",
+            "clearPins"
+          ],
+          "enumDescriptions": [
+            "Keep a per-commit pin set while HEAD is detached.",
+            "Unpin tabs and do not save or restore a set while HEAD is detached."
+          ],
+          "default": "keepCommitPins",
+          "description": "How to handle a detached HEAD state."
+        },
+        "tabkeeper.pollingIntervalSeconds": {
+          "type": "number",
+          "default": 2,
+          "minimum": 1,
+          "maximum": 60,
+          "description": "How often the branch is re-checked if the file watcher misses a change."
+        },
+        "tabkeeper.rules": {
+          "type": "array",
+          "default": [],
+          "description": "Branch rules that share a tab set across branches, or disable synchronization for matching branches. The most specific pattern wins.",
+          "items": {
+            "type": "object",
+            "required": [
+              "pattern"
+            ],
+            "properties": {
+              "pattern": {
+                "type": "string",
+                "description": "A case-insensitive branch glob, e.g. \"feature/*\". * matches any run of characters, ? matches one."
+              },
+              "pinSetName": {
+                "type": "string",
+                "default": "",
+                "description": "The shared tab set that matching branches use instead of their own."
+              },
+              "enabled": {
+                "type": "boolean",
+                "default": true,
+                "description": "true shares the set across matching branches; false leaves matching branches unmanaged."
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.0",
+    "@types/vscode": "^1.90.0",
+    "@types/node": "^20.0.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "mocha": "^10.8.2",
+    "typescript": "^5.5.0"
+  }
+}
