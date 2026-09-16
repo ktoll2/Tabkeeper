@@ -2,10 +2,13 @@ name: Release
 
 # Manual only: this never runs on push or pull_request. Builds both platforms in one run, each
 # through its own Makefile. Choose "release" or "prerelease" to also publish both .vsix packages
-# to one shared GitHub release. The release tag and the "version must increase" check are driven
-# by the Visual Studio side (visualstudio/Tabkeeper.Vsix/source.extension.vsixmanifest's
-# Identity/@Version, bumped by hand); the VS Code .vsix rides along on that same release using its
-# own independently-versioned build from vscode/package.json.
+# to one shared GitHub release. Both platforms build at exactly whatever version the repo-root
+# VERSION file holds (bumped by hand before triggering a release): visualstudio/scripts/version.ps1
+# keeps source.extension.vsixmanifest's Identity/@Version in sync with it, and vscode/Makefile's
+# `package` target passes it straight through to `vsce package <version>` (which updates
+# vscode/package.json and package-lock.json itself via `npm version`). The release tag and the
+# "version must increase" check work off that same value; a prerelease's tag gets a run-number
+# suffix for uniqueness, but the packaged version itself is never modified.
 on:
   workflow_dispatch:
     inputs:
@@ -53,33 +56,25 @@ jobs:
           $baseVersion = make current-version
 
           if ('${{ inputs.release }}' -eq 'prerelease') {
-            $vsixVersion = "$baseVersion.${{ github.run_number }}"
             "tag=v$baseVersion-pre.${{ github.run_number }}" >> $env:GITHUB_OUTPUT
           } elseif ('${{ inputs.release }}' -eq 'release') {
             git fetch --tags --quiet
             $lastTag = git tag --list 'v*' |
               ForEach-Object { $_.TrimStart('v') } |
-              Where-Object { $_ -match '^\d+\.\d+\.\d+$' } |
+              Where-Object { $_ -match '^\d+(\.\d+){2,3}$' } |
               Sort-Object { [version]$_ } |
               Select-Object -Last 1
 
             if ($lastTag -and [version]$baseVersion -le [version]$lastTag) {
-              throw "source.extension.vsixmanifest Identity/@Version ($baseVersion) must be greater than the last release ($lastTag). Bump the Version attribute before releasing."
+              throw "VERSION ($baseVersion) must be greater than the last release ($lastTag). Bump the VERSION file before releasing."
             }
 
-            $vsixVersion = $baseVersion
             "tag=v$baseVersion" >> $env:GITHUB_OUTPUT
           } else {
-            $vsixVersion = $baseVersion
             "tag=" >> $env:GITHUB_OUTPUT
           }
 
-          "vsix=$vsixVersion" >> $env:GITHUB_OUTPUT
-          Write-Host "Version $vsixVersion"
-
-      - name: Stamp version
-        if: inputs.release != 'none'
-        run: make stamp-version VERSION=${{ steps.version.outputs.vsix }}
+          Write-Host "Version $baseVersion"
 
       - name: Build and test
         run: make test

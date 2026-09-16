@@ -3,8 +3,9 @@
 help:
 	@echo "Targets:"
 	@echo "  restore         - dotnet restore"
-	@echo "  current-version - print the VSIX manifest's current version"
-	@echo "  stamp-version   - set the VSIX manifest version (make stamp-version VERSION=1.2.3)"
+	@echo "  current-version - print the current version (from the repo-root VERSION file)"
+	@echo "  stamp-version   - set the version (make stamp-version VERSION=1.2.3); updates VERSION"
+	@echo "                    and the VSIX manifest together"
 	@echo "  build           - build Tabkeeper.slnx (Release)"
 	@echo "  test            - build and run Tabkeeper.Core.Tests"
 	@echo "  package         - build the .vsix (same as build; VSIX packaging runs as part of the build)"

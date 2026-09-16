@@ -1,15 +1,17 @@
 .PHONY: help install ci current-version build watch test run package clean
 
+VERSION := $(shell node -p "require('fs').readFileSync('../VERSION', 'utf8').trim()")
+
 help:
 	@echo "Targets:"
 	@echo "  install         - npm install dependencies (updates package-lock.json)"
 	@echo "  ci              - npm ci; reproducible install from package-lock.json, for CI"
-	@echo "  current-version - print package.json's current version"
+	@echo "  current-version - print the current version (from the repo-root VERSION file)"
 	@echo "  build           - compile TypeScript to dist/"
 	@echo "  watch           - compile in watch mode"
 	@echo "  test            - compile and run the extension test suite"
 	@echo "  run             - launch an Extension Development Host with this extension loaded"
-	@echo "  package         - build a .vsix package with vsce"
+	@echo "  package         - build a .vsix package with vsce, stamped to VERSION's value"
 	@echo "  clean           - remove build output and packaged artifacts"
 
 install:
@@ -19,7 +21,7 @@ ci:
 	npm ci
 
 current-version:
-	@node -p "require('./package.json').version"
+	@echo $(VERSION)
 
 build:
 	npm run compile
@@ -34,7 +36,7 @@ run: build
 	code --extensionDevelopmentPath="$(CURDIR)" .
 
 package: build
-	npx --yes @vscode/vsce package --out Tabkeeper.VSCode.vsix
+	npx --yes @vscode/vsce package $(VERSION) --no-git-tag-version --out Tabkeeper.VSCode.vsix
 
 clean:
 	rm -rf dist out .vscode-test *.vsix *.tsbuildinfo
