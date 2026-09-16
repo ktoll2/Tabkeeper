@@ -35,7 +35,7 @@ if ($manifestContent -notmatch '<Identity\b[^>]*\bVersion="([^"]+)"') {
 if ($Matches[1] -ne $currentVersion) {
     ($manifestContent -replace '(<Identity\b[^>]*\bVersion=")[^"]*(")', "`${1}$currentVersion`${2}") |
         Set-Content $manifest -NoNewline
-    Write-Host "Stamped version $currentVersion (VERSION and $manifest)" -ForegroundColor DarkGray
+    [Console]::Error.WriteLine("Stamped version $currentVersion (VERSION and $manifest)")
 }
 
 Write-Output $currentVersion
