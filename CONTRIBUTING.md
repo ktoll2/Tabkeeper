@@ -1,8 +1,8 @@
 # Contributing to Tabkeeper
 
 Thank you for contributing. Please open an issue before starting substantial work so the proposed
-behavior and scope can be discussed. Say which platform — Visual Studio, VS Code/VSCodium, or both
-— your issue or change applies to.
+behavior and scope can be discussed. Say which platform (Visual Studio, VS Code/VSCodium, or both)
+your issue or change applies to.
 
 This repository holds two independent implementations of the same idea: [`visualstudio/`](visualstudio)
 (.NET/VSIX, for Visual Studio) and [`vscode/`](vscode) (TypeScript, for VS Code/VSCodium). Pick the
@@ -46,7 +46,7 @@ opts `dotnet test` into that runner. You can also run the test project directly 
 ### Versioning and releases
 
 Tabkeeper uses semantic versioning. The single source of truth for both platforms is the
-repo-root [`VERSION`](../VERSION) file (`MAJOR.MINOR.PATCH`) — bump it by hand as part of the
+repo-root [`VERSION`](../VERSION) file (`MAJOR.MINOR.PATCH`): bump it by hand as part of the
 change that should ship as a release:
 
 - **PATCH** for a bug fix with no behavior change beyond the fix.
@@ -62,19 +62,19 @@ runs, so the manifest's committed value never needs hand-editing), and `vscode/M
 
 Releasing is manual: run **Release** (`.github/workflows/release.yml`) from the Actions tab
 (`workflow_dispatch`) and choose a `release` input. This one workflow builds *both* platforms in
-parallel — Visual Studio through `visualstudio/Makefile`, VS Code through `vscode/Makefile` — and
+parallel (Visual Studio through `visualstudio/Makefile`, VS Code through `vscode/Makefile`) and
 only publishes once *both* builds succeed, so a failure in either one never leaves a release with
 just one platform's asset attached:
 
 | `release` input | Result |
 | --- | --- |
 | `none` (default) | build + test both platforms; uploads each `.vsix` as a run artifact, publishes nothing |
-| `prerelease` | also publishes a GitHub pre-release tagged `v<version>-pre.<run>` with both `.vsix` files, once both builds succeed. `VERSION` isn't required to change per run — the run number is appended to the *tag* for uniqueness, but the packaged version itself is never modified. |
-| `release` | also publishes a GitHub release tagged `v<version>` with both `.vsix` files, once both builds succeed. **Fails the build** if `VERSION` wasn't increased since the last `v<major>.<minor>.<patch>` release tag — bump it before running, not after. |
+| `prerelease` | also publishes a GitHub pre-release tagged `v<version>-pre.<run>` with both `.vsix` files, once both builds succeed. `VERSION` isn't required to change per run: the run number is appended to the *tag* for uniqueness, but the packaged version itself is never modified. |
+| `release` | also publishes a GitHub release tagged `v<version>` with both `.vsix` files, once both builds succeed. **Fails the build** if `VERSION` wasn't increased since the last `v<major>.<minor>.<patch>` release tag: bump it before running, not after. |
 
 Both `.vsix` files ship under the same tag/version, computed once from `VERSION`. The release
 notes list each `.vsix`'s SHA-256 checksum inline; no separate `.sha256` file is attached. Nothing
-pushes or releases automatically on a plain commit or pull request — every run is a deliberate,
+pushes or releases automatically on a plain commit or pull request; every run is a deliberate,
 manual trigger.
 
 ## VS Code (`vscode/`)
@@ -101,10 +101,10 @@ npm test
 ```
 
 `make test`/`npm test` compiles and runs the extension test suite (`vscode/src/test/`) against a
-real VS Code test host — on Linux this needs a virtual display (`xvfb-run -a make test`), which is
+real VS Code test host (on Linux this needs a virtual display: `xvfb-run -a make test`), which is
 what CI uses. Manual testing is also available via `F5` with `vscode/` open in VS Code. Package a
 `.vsix` with `make package` (`npx --yes @vscode/vsce package`), which also stamps the package to
-match the repo-root `VERSION` file's value (see "Versioning and releases" above — both platforms
+match the repo-root `VERSION` file's value (see "Versioning and releases" above; both platforms
 share that one source of truth).
 
 ## Change guidelines
