@@ -100,6 +100,7 @@ jobs:
           $sha  = (Get-FileHash $vsix.FullName -Algorithm SHA256).Hash.ToLower()
           "$sha  $($vsix.Name)" | Set-Content "$($vsix.FullName).sha256" -NoNewline
           "sha256=$sha" >> $env:GITHUB_OUTPUT
+          "vsix=$($vsix.Name)" >> $env:GITHUB_OUTPUT
 
       - name: Publish GitHub release
         if: inputs.release != 'none'
@@ -112,7 +113,7 @@ jobs:
           append_body: true
           body: |
             ---
-            `Tabkeeper.vsix` SHA-256: `${{ steps.hash.outputs.sha256 }}`
+            `${{ steps.hash.outputs.vsix }}` SHA-256: `${{ steps.hash.outputs.sha256 }}`
           fail_on_unmatched_files: true
           files: |
             visualstudio/Tabkeeper.Vsix/bin/Release/**/*.vsix
@@ -149,10 +150,12 @@ jobs:
       - name: Install dependencies
         run: make ci
 
-      # No automated test suite exists yet for this port (no .vscode-test config or test files),
-      # so there is nothing for `make test` to run.
+      # xvfb-run gives the VS Code test host a virtual display; ubuntu-latest runners have no X
+      # server, and @vscode/test-electron launches a real (if invisible) Electron window.
+      - name: Build and test
+        run: xvfb-run -a make test
 
-      - name: Compile and package
+      - name: Package
         run: make package
 
       - name: Upload VSIX artifact

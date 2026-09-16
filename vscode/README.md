@@ -18,7 +18,7 @@ or touches Git itself.
 2. In VS Code or VSCodium, open the Extensions view, choose the `...` menu, and select
    **Install from VSIX...**. Or from a terminal:
    ```bash
-   code --install-extension tabkeeper-<version>.vsix
+   code --install-extension Tabkeeper.VSCode.vsix
    ```
    (use `codium` instead of `code` for VSCodium).
 
@@ -27,7 +27,7 @@ To update, install a newer `.vsix` over the old one. To remove it, use the Exten
 Every release also publishes a `.vsix.sha256` checksum. To check the download:
 
 ```bash
-sha256sum tabkeeper-<version>.vsix
+sha256sum Tabkeeper.VSCode.vsix
 ```
 
 ## Using it

@@ -14,9 +14,12 @@
     <TargetFramework>net48</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <!-- Product name for the shipped assembly and .vsix; C# namespaces stay Tabkeeper.* internally. -->
+    <!-- Product name for the shipped assembly; C# namespaces stay Tabkeeper.* internally. -->
     <AssemblyName>Tabkeeper</AssemblyName>
     <RootNamespace>Tabkeeper.Vsix</RootNamespace>
+    <!-- Names the packaged .vsix after the IDE it targets, so it's distinguishable from the VS
+         Code .vsix (e.g. on a GitHub release page listing both side by side). -->
+    <TargetVsixContainerName>Tabkeeper.VisualStudio.vsix</TargetVsixContainerName>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <!-- Emit "CodeBase"="$PackageFolder$\Tabkeeper.dll" in the .pkgdef so Visual Studio loads the
          package assembly from the extension folder. Without it the package fails with

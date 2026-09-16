@@ -14,17 +14,17 @@ and never touches file contents.
 
 ## Install
 
-1. Download `Tabkeeper.vsix` from the latest [release](https://github.com/ktoll2/Tabkeeper/releases).
+1. Download `Tabkeeper.VisualStudio.vsix` from the latest [release](https://github.com/ktoll2/Tabkeeper/releases).
 2. Close Visual Studio, double-click the file, and confirm the installer.
 3. Reopen Visual Studio. Tabkeeper starts automatically when you open a solution.
 
 To update, install a newer `.vsix` over the old one. To remove it, use
 **Extensions > Manage Extensions**.
 
-Every release also publishes `Tabkeeper.vsix.sha256`. To check the download:
+Every release also publishes `Tabkeeper.VisualStudio.vsix.sha256`. To check the download:
 
 ```powershell
-(Get-FileHash Tabkeeper.vsix -Algorithm SHA256).Hash
+(Get-FileHash Tabkeeper.VisualStudio.vsix -Algorithm SHA256).Hash
 ```
 
 ## Using it

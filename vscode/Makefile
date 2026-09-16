@@ -34,7 +34,7 @@ run: build
 	code --extensionDevelopmentPath="$(CURDIR)" .
 
 package: build
-	npx --yes @vscode/vsce package
+	npx --yes @vscode/vsce package --out Tabkeeper.VSCode.vsix
 
 clean:
 	rm -rf dist out .vscode-test *.vsix *.tsbuildinfo
