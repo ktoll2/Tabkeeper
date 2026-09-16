@@ -10,7 +10,11 @@ export function isSafeRelativePath(candidate: string): boolean {
         return false;
     }
 
-    if (path.isAbsolute(candidate)) {
+    // path.isAbsolute follows the host OS, so on its own it would accept a Windows-style
+    // "C:\..." path as "relative" when validated on Linux/macOS. Pin sets are portable and may be
+    // imported on a different OS than they were exported from, so a drive letter is rejected
+    // regardless of the current platform.
+    if (path.isAbsolute(candidate) || /^[a-zA-Z]:[\\/]/.test(candidate)) {
         return false;
     }
 

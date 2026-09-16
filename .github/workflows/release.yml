@@ -1,14 +1,17 @@
 name: Release
 
 # Manual only: this never runs on push or pull_request. Builds both platforms in one run, each
-# through its own Makefile. Choose "release" or "prerelease" to also publish both .vsix packages
-# to one shared GitHub release. Both platforms build at exactly whatever version the repo-root
-# VERSION file holds (bumped by hand before triggering a release): visualstudio/scripts/version.ps1
-# keeps source.extension.vsixmanifest's Identity/@Version in sync with it, and vscode/Makefile's
-# `package` target passes it straight through to `vsce package <version>` (which updates
-# vscode/package.json and package-lock.json itself via `npm version`). The release tag and the
-# "version must increase" check work off that same value; a prerelease's tag gets a run-number
-# suffix for uniqueness, but the packaged version itself is never modified.
+# through its own Makefile, in parallel. Choose "release" or "prerelease" to also publish both
+# .vsix packages to one shared GitHub release - but only once BOTH builds succeed: a separate
+# `publish` job needs both build jobs, so a failure in either one skips publishing entirely
+# instead of leaving a release with only one platform's asset attached. Both platforms build at
+# exactly whatever version the repo-root VERSION file holds (bumped by hand before triggering a
+# release): visualstudio/scripts/version.ps1 keeps source.extension.vsixmanifest's Identity/@Version
+# in sync with it, and vscode/Makefile's `package` target passes it straight through to
+# `vsce package <version>` (which updates vscode/package.json and package-lock.json itself via
+# `npm version`). The release tag and the "version must increase" check work off that same value;
+# a prerelease's tag gets a run-number suffix for uniqueness, but the packaged version itself is
+# never modified.
 on:
   workflow_dispatch:
     inputs:
@@ -35,12 +38,12 @@ jobs:
 
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
 
@@ -80,39 +83,11 @@ jobs:
         run: make test
 
       - name: Upload VSIX artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Tabkeeper-VSIX
           path: visualstudio/Tabkeeper.Vsix/bin/Release/**/*.vsix
           if-no-files-found: error
-
-      - name: Compute checksum
-        id: hash
-        if: inputs.release != 'none'
-        shell: pwsh
-        run: |
-          $vsix = Get-ChildItem Tabkeeper.Vsix/bin/Release -Recurse -Filter *.vsix | Select-Object -First 1
-          $sha  = (Get-FileHash $vsix.FullName -Algorithm SHA256).Hash.ToLower()
-          "$sha  $($vsix.Name)" | Set-Content "$($vsix.FullName).sha256" -NoNewline
-          "sha256=$sha" >> $env:GITHUB_OUTPUT
-          "vsix=$($vsix.Name)" >> $env:GITHUB_OUTPUT
-
-      - name: Publish GitHub release
-        if: inputs.release != 'none'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: ${{ steps.version.outputs.tag }}
-          prerelease: ${{ inputs.release == 'prerelease' }}
-          generate_release_notes: true
-          append_body: true
-          body: |
-            ---
-            `${{ steps.hash.outputs.vsix }}` SHA-256: `${{ steps.hash.outputs.sha256 }}`
-          fail_on_unmatched_files: true
-          files: |
-            visualstudio/Tabkeeper.Vsix/bin/Release/**/*.vsix
-            visualstudio/Tabkeeper.Vsix/bin/Release/**/*.vsix.sha256
 
       #- name: Publish to VS Marketplace
       #  if: ${{ secrets.VS_MARKETPLACE_PAT != '' }}
@@ -125,7 +100,6 @@ jobs:
       #    & $publisher.FullName publish -payload $vsix.FullName -publishManifest Tabkeeper.Vsix/publish.json -personalAccessToken $env:VS_MARKETPLACE_PAT
 
   vscode:
-    needs: visualstudio
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -133,10 +107,10 @@ jobs:
 
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "24"
           cache: npm
@@ -154,24 +128,48 @@ jobs:
         run: make package
 
       - name: Upload VSIX artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Tabkeeper-VSIX-vscode
           path: vscode/*.vsix
           if-no-files-found: error
 
-      - name: Compute checksum
+  # Only runs once both build jobs above have succeeded, so a failure in either platform's build
+  # or test step skips this entirely - no release is ever published with just one platform's
+  # asset attached.
+  publish:
+    needs: [visualstudio, vscode]
+    if: inputs.release != 'none'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Visual Studio VSIX artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: Tabkeeper-VSIX
+          path: dist/visualstudio
+
+      - name: Download VS Code VSIX artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: Tabkeeper-VSIX-vscode
+          path: dist/vscode
+
+      - name: Compute checksums
         id: hash
-        if: inputs.release != 'none'
         run: |
-          vsix="$(ls *.vsix | head -n1)"
-          sha="$(sha256sum "$vsix" | awk '{print $1}')"
-          echo "$sha  $vsix" > "$vsix.sha256"
-          echo "sha256=$sha" >> "$GITHUB_OUTPUT"
-          echo "vsix=$vsix" >> "$GITHUB_OUTPUT"
+          vs_vsix="$(find dist/visualstudio -name '*.vsix' | head -n1)"
+          vscode_vsix="$(find dist/vscode -name '*.vsix' | head -n1)"
+          vs_sha="$(sha256sum "$vs_vsix" | awk '{print $1}')"
+          vscode_sha="$(sha256sum "$vscode_vsix" | awk '{print $1}')"
+          echo "$vs_sha  $(basename "$vs_vsix")" > "$vs_vsix.sha256"
+          echo "$vscode_sha  $(basename "$vscode_vsix")" > "$vscode_vsix.sha256"
+          echo "vs_vsix=$(basename "$vs_vsix")" >> "$GITHUB_OUTPUT"
+          echo "vs_sha=$vs_sha" >> "$GITHUB_OUTPUT"
+          echo "vscode_vsix=$(basename "$vscode_vsix")" >> "$GITHUB_OUTPUT"
+          echo "vscode_sha=$vscode_sha" >> "$GITHUB_OUTPUT"
 
       - name: Publish GitHub release
-        if: inputs.release != 'none'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.visualstudio.outputs.tag }}
@@ -181,8 +179,11 @@ jobs:
           append_body: true
           body: |
             ---
-            `${{ steps.hash.outputs.vsix }}` SHA-256: `${{ steps.hash.outputs.sha256 }}`
+            `${{ steps.hash.outputs.vs_vsix }}` SHA-256: `${{ steps.hash.outputs.vs_sha }}`
+            `${{ steps.hash.outputs.vscode_vsix }}` SHA-256: `${{ steps.hash.outputs.vscode_sha }}`
           fail_on_unmatched_files: true
           files: |
-            vscode/*.vsix
-            vscode/*.vsix.sha256
+            dist/visualstudio/**/*.vsix
+            dist/visualstudio/**/*.vsix.sha256
+            dist/vscode/*.vsix
+            dist/vscode/*.vsix.sha256
