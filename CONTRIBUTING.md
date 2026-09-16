@@ -45,31 +45,37 @@ opts `dotnet test` into that runner. You can also run the test project directly 
 
 ### Versioning and releases
 
-Tabkeeper uses semantic versioning. The single source of truth is
-`visualstudio/Tabkeeper.Vsix/source.extension.vsixmanifest`'s `Identity/@Version`
-(`MAJOR.MINOR.PATCH`) — bump it by hand as part of the change that should ship as a release:
+Tabkeeper uses semantic versioning. The single source of truth for both platforms is the
+repo-root [`VERSION`](../VERSION) file (`MAJOR.MINOR.PATCH`) — bump it by hand as part of the
+change that should ship as a release:
 
 - **PATCH** for a bug fix with no behavior change beyond the fix.
 - **MINOR** for a backwards-compatible feature or setting addition.
 - **MAJOR** for a breaking change (a setting or branch-rule format changes incompatibly, a command
   is removed, etc.).
 
+`visualstudio/scripts/version.ps1` keeps `source.extension.vsixmanifest`'s `Identity/@Version` in
+sync with `VERSION` automatically (it self-heals whenever `make current-version`/`make build`
+runs, so the manifest's committed value never needs hand-editing), and `vscode/Makefile`'s
+`package` target passes `VERSION`'s value straight into `vsce package <version>`, which updates
+`vscode/package.json` and `package-lock.json` itself.
+
 Releasing is manual: run **Release** (`.github/workflows/release.yml`) from the Actions tab
-(`workflow_dispatch`) and choose a `release` input. This one workflow builds *both* platforms —
-Visual Studio through `visualstudio/Makefile`, VS Code through `vscode/Makefile` — and, on a real
-release input, publishes both `.vsix` packages to the *same* GitHub release:
+(`workflow_dispatch`) and choose a `release` input. This one workflow builds *both* platforms in
+parallel — Visual Studio through `visualstudio/Makefile`, VS Code through `vscode/Makefile` — and
+only publishes once *both* builds succeed, so a failure in either one never leaves a release with
+just one platform's asset attached:
 
 | `release` input | Result |
 | --- | --- |
 | `none` (default) | build + test both platforms; uploads each `.vsix` as a run artifact, publishes nothing |
-| `prerelease` | also publishes a GitHub pre-release tagged `v<version>-pre.<run>` with both `.vsix` files. The manifest version isn't required to change per run — the run number is appended as a 4th VSIX version segment so repeated prereleases still get a unique, increasing version without a manual bump each time. |
-| `release` | also publishes a GitHub release tagged `v<version>` with both `.vsix` files. **Fails the build** if the manifest's version wasn't increased since the last `v*` release tag — bump it before running, not after. |
+| `prerelease` | also publishes a GitHub pre-release tagged `v<version>-pre.<run>` with both `.vsix` files, once both builds succeed. `VERSION` isn't required to change per run — the run number is appended to the *tag* for uniqueness, but the packaged version itself is never modified. |
+| `release` | also publishes a GitHub release tagged `v<version>` with both `.vsix` files, once both builds succeed. **Fails the build** if `VERSION` wasn't increased since the last `v<major>.<minor>.<patch>` release tag — bump it before running, not after. |
 
-The release tag comes from the Visual Studio side's manifest version; the VS Code `.vsix` rides
-along on that same release using whatever version is currently in `vscode/package.json` (its own
-version doesn't need to match). Either release option attaches a `.vsix.sha256` checksum file per
-package (the hash is also added to the release notes). Nothing pushes or releases automatically on
-a plain commit or pull request — every run is a deliberate, manual trigger.
+Both `.vsix` files ship under the same tag/version, computed once from `VERSION`. The release
+notes list each `.vsix`'s SHA-256 checksum inline; no separate `.sha256` file is attached. Nothing
+pushes or releases automatically on a plain commit or pull request — every run is a deliberate,
+manual trigger.
 
 ## VS Code (`vscode/`)
 
@@ -83,28 +89,23 @@ a plain commit or pull request — every run is a deliberate, manual trigger.
 Run from `vscode/`:
 
 ```bash
-make install
-make build
+make ci
+make test
 ```
 
 or the equivalent commands directly:
 
 ```bash
-npm install
-npm run compile
+npm ci
+npm test
 ```
 
-There's no automated test suite yet — `npm test` has nothing to run against. Manual testing is via
-`F5` with `vscode/` open in VS Code. Package a `.vsix` with `make package`
-(`npx --yes @vscode/vsce package`).
-
-### Versioning and releases
-
-The version lives in `vscode/package.json`'s `version` field (`MAJOR.MINOR.PATCH`) — bump it by
-hand before a release, following the same PATCH/MINOR/MAJOR guidance as the Visual Studio side.
-Unlike the Visual Studio side, there's no enforced "version must increase" check here; the same
-`release.yml` workflow (see above) builds and, on a release input, publishes this `.vsix` alongside
-the Visual Studio one on the shared GitHub release.
+`make test`/`npm test` compiles and runs the extension test suite (`vscode/src/test/`) against a
+real VS Code test host — on Linux this needs a virtual display (`xvfb-run -a make test`), which is
+what CI uses. Manual testing is also available via `F5` with `vscode/` open in VS Code. Package a
+`.vsix` with `make package` (`npx --yes @vscode/vsce package`), which also stamps the package to
+match the repo-root `VERSION` file's value (see "Versioning and releases" above — both platforms
+share that one source of truth).
 
 ## Change guidelines
 

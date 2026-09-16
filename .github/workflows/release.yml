@@ -160,17 +160,13 @@ jobs:
         run: |
           vs_vsix="$(find dist/visualstudio -name '*.vsix' | head -n1)"
           vscode_vsix="$(find dist/vscode -name '*.vsix' | head -n1)"
-          vs_sha="$(sha256sum "$vs_vsix" | awk '{print $1}')"
-          vscode_sha="$(sha256sum "$vscode_vsix" | awk '{print $1}')"
-          echo "$vs_sha  $(basename "$vs_vsix")" > "$vs_vsix.sha256"
-          echo "$vscode_sha  $(basename "$vscode_vsix")" > "$vscode_vsix.sha256"
           echo "vs_vsix=$(basename "$vs_vsix")" >> "$GITHUB_OUTPUT"
-          echo "vs_sha=$vs_sha" >> "$GITHUB_OUTPUT"
+          echo "vs_sha=$(sha256sum "$vs_vsix" | awk '{print $1}')" >> "$GITHUB_OUTPUT"
           echo "vscode_vsix=$(basename "$vscode_vsix")" >> "$GITHUB_OUTPUT"
-          echo "vscode_sha=$vscode_sha" >> "$GITHUB_OUTPUT"
+          echo "vscode_sha=$(sha256sum "$vscode_vsix" | awk '{print $1}')" >> "$GITHUB_OUTPUT"
 
       - name: Publish GitHub release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.visualstudio.outputs.tag }}
           name: ${{ needs.visualstudio.outputs.tag }}
@@ -184,6 +180,4 @@ jobs:
           fail_on_unmatched_files: true
           files: |
             dist/visualstudio/**/*.vsix
-            dist/visualstudio/**/*.vsix.sha256
             dist/vscode/*.vsix
-            dist/vscode/*.vsix.sha256

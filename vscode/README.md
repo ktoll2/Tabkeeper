@@ -24,7 +24,7 @@ or touches Git itself.
 
 To update, install a newer `.vsix` over the old one. To remove it, use the Extensions view.
 
-Every release also publishes a `.vsix.sha256` checksum. To check the download:
+Every release's notes list the `.vsix`'s SHA-256 checksum. To check the download:
 
 ```bash
 sha256sum Tabkeeper.VSCode.vsix

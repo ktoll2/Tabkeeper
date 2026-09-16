@@ -21,7 +21,7 @@ and never touches file contents.
 To update, install a newer `.vsix` over the old one. To remove it, use
 **Extensions > Manage Extensions**.
 
-Every release also publishes `Tabkeeper.VisualStudio.vsix.sha256`. To check the download:
+Every release's notes list the `.vsix`'s SHA-256 checksum. To check the download:
 
 ```powershell
 (Get-FileHash Tabkeeper.VisualStudio.vsix -Algorithm SHA256).Hash
