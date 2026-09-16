@@ -6,8 +6,10 @@
     Studio reads that attribute directly at build time. Shared by `make current-version` /
     `make stamp-version` and CI so both apply the exact same logic.
 .PARAMETER Version
-    When given, replaces the VERSION file's content and the manifest's version with this value.
-    When omitted, prints the current version from the VERSION file.
+    When given, replaces the VERSION file's content with this value. Either way, the manifest is
+    then stamped to match VERSION's (possibly just-updated) content and the resulting version is
+    printed - so a plain read also self-heals the manifest if it had drifted, and the manifest's
+    committed value never needs to be hand-edited.
 #>
 param(
     [string]$Version
@@ -21,15 +23,19 @@ $manifest = (Resolve-Path $manifest).Path
 
 if ($Version) {
     Set-Content $versionFile -Value $Version -NoNewline
-
-    $manifestContent = Get-Content $manifest -Raw
-    if ($manifestContent -notmatch '<Identity\b[^>]*\bVersion="([^"]+)"') {
-        throw "Could not find Identity/@Version in $manifest"
-    }
-
-    ($manifestContent -replace '(<Identity\b[^>]*\bVersion=")[^"]*(")', "`${1}$Version`${2}") |
-        Set-Content $manifest -NoNewline
-    Write-Host "Stamped version $Version (VERSION and $manifest)"
-} else {
-    Write-Output (Get-Content $versionFile -Raw).Trim()
 }
+
+$currentVersion = (Get-Content $versionFile -Raw).Trim()
+
+$manifestContent = Get-Content $manifest -Raw
+if ($manifestContent -notmatch '<Identity\b[^>]*\bVersion="([^"]+)"') {
+    throw "Could not find Identity/@Version in $manifest"
+}
+
+if ($Matches[1] -ne $currentVersion) {
+    ($manifestContent -replace '(<Identity\b[^>]*\bVersion=")[^"]*(")', "`${1}$currentVersion`${2}") |
+        Set-Content $manifest -NoNewline
+    Write-Host "Stamped version $currentVersion (VERSION and $manifest)" -ForegroundColor DarkGray
+}
+
+Write-Output $currentVersion
